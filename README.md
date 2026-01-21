@@ -1,12 +1,18 @@
-# Sensor Analysis Visualizer
+# MRI PPS Data Idea
+
+## Introduction
+
+# Dashboard for data analysis and visualization
+
+## Sensor Analysis Visualizer
 
 This project is designed to visualize and analyze MRI sensor data generated from Blender simulations. It provides an interactive dashboard to explore performance metrics, error correlations, and time execution across different test scenarios.
 
-## Project Overview
+### Project Overview
 
 The `web_visualization` directory contains a full-stack application built to process and display data from Excel files (`Analysis_Extreme test.xlsx` and `Analysis_Hard test.xlsx`). 
 
-### Key Features
+#### Key Features
 - **Interactive Dashboard**: Switch between "Extreme Test" and "Hard Test" datasets.
 - **KPI Metrics**: Real-time calculation of Average Fitness, Rotation Error, Translation Error, and Execution Time.
 - **Performance Charts**:
@@ -19,13 +25,13 @@ The `web_visualization` directory contains a full-stack application built to pro
 
 ---
 
-## Getting Started
+#### Getting Started
 
-### Prerequisites
+##### Prerequisites
 - Python 3.10+
 - Node.js & npm
 
-### Backend Setup (FastAPI)
+##### Backend Setup (FastAPI)
 The backend serves the processed data via a REST API.
 
 1. Navigate to the backend directory:
@@ -47,7 +53,7 @@ The backend serves the processed data via a REST API.
    ```
    *The API will be available at `http://localhost:8000`*
 
-### Frontend Setup (React + Vite)
+##### Frontend Setup (React + Vite)
 The frontend provides the interactive visualization dashboard.
 
 1. Navigate to the frontend directory:
@@ -66,7 +72,7 @@ The frontend provides the interactive visualization dashboard.
 
 ---
 
-## Project Structure
+#### Project Structure
 
 - `web_visualization/`
     - `backend/`: FastAPI application, data processing logic, and Excel parsers.
@@ -76,7 +82,7 @@ The frontend provides the interactive visualization dashboard.
 
 ---
 
-## Technologies Used
+#### Technologies Used
 - **Backend**: FastAPI, Pandas, NumPy, Uvicorn
 - **Frontend**: React, Vite, Recharts, TailwindCSS (Vanilla CSS for custom styling)
 - **Data Source**: Microsoft Excel (.xlsx) parsed from Blender simulation outputs.
