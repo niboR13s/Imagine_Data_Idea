@@ -4,7 +4,7 @@
 
 # Dashboard for data analysis and visualization
 
-## Sensor Analysis Visualizer
+## Introduction
 
 This project is designed to visualize and analyze MRI sensor data generated from Blender simulations. It provides an interactive dashboard to explore performance metrics, error correlations, and time execution across different test scenarios.
 
