@@ -152,9 +152,12 @@ const Dashboard = ({ data, detailedData, fetchDetailed, detailedLoading, fetchSc
         // Heuristic RMSE and Score
         const est_rmse = isAligned ? (gtData.RMSE || 0) : (gtData.RMSE || 0) + trans_err * 0.1 + rot_err * 0.001;
 
-        // More sensitive accuracy score: 100% at perfection, drops off organically
-        // Perfection means trans_err=0 and rot_err=0
-        const accuracy = isAligned ? 100 : Math.max(0, 100 * Math.exp(-(trans_err * 20 + rot_err * 0.5)));
+        // More intuitive accuracy score: 
+        // We use a very soft falloff so users see progress immediately even from far away.
+        // 0% only when translation error > 1 meter or rotation > 180 degrees.
+        const trans_score = Math.max(0, 100 * (1 - trans_err / 1.0));
+        const rot_score = Math.max(0, 100 * (1 - rot_err / 180.0));
+        const accuracy = isAligned ? 100 : (trans_score * 0.7 + rot_score * 0.3);
 
         return { trans_err, rot_err, est_rmse, accuracy };
     }, [manualTransform, gtData, gtEuler, isAligned]);
@@ -394,26 +397,29 @@ const Dashboard = ({ data, detailedData, fetchDetailed, detailedLoading, fetchSc
                                 )}
 
                                 <div className={clsx(
-                                    "space-y-4 bg-gray-900/50 p-5 rounded-xl border transition-all duration-300",
+                                    "bg-gray-900/50 p-4 rounded-xl border transition-all duration-300",
                                     isAligned ? "opacity-30 pointer-events-none border-gray-800" : "border-gray-700"
                                 )}>
-                                    <div className="flex justify-between items-center mb-2">
-                                        <h4 className="text-xs font-black text-blue-300 uppercase tracking-widest">Manual Alignment Tools</h4>
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h4 className="text-xs font-black text-blue-300 uppercase tracking-widest">Manual Alignment</h4>
                                         <button
                                             onClick={resetManual}
-                                            className="text-[10px] text-gray-500 hover:text-white uppercase tracking-widest font-bold"
+                                            className="text-[10px] text-gray-500 hover:text-white uppercase tracking-widest font-bold px-2 py-0.5 border border-gray-700 rounded hover:bg-gray-800"
                                         >
                                             Reset
                                         </button>
                                     </div>
-                                    <div className="space-y-4">
-                                        <Slider label="TX (m)" value={manualTransform.tx} min={-0.2} max={0.2} step={0.001} onChange={(v) => setManualTransform(prev => ({ ...prev, tx: v }))} />
-                                        <Slider label="TY (m)" value={manualTransform.ty} min={-0.2} max={0.2} step={0.001} onChange={(v) => setManualTransform(prev => ({ ...prev, ty: v }))} />
-                                        <Slider label="TZ (m)" value={manualTransform.tz} min={-0.2} max={0.2} step={0.001} onChange={(v) => setManualTransform(prev => ({ ...prev, tz: v }))} />
-                                        <div className="h-px bg-gray-800 my-4" />
-                                        <Slider label="RX (°)" value={manualTransform.rx} min={-30} max={30} step={0.1} onChange={(v) => setManualTransform(prev => ({ ...prev, rx: v }))} />
-                                        <Slider label="RY (°)" value={manualTransform.ry} min={-30} max={30} step={0.1} onChange={(v) => setManualTransform(prev => ({ ...prev, ry: v }))} />
-                                        <Slider label="RZ (°)" value={manualTransform.rz} min={-30} max={30} step={0.1} onChange={(v) => setManualTransform(prev => ({ ...prev, rz: v }))} />
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <div className="space-y-3">
+                                            <Slider label="TX (m)" value={manualTransform.tx} min={-0.2} max={0.2} step={0.001} onChange={(v) => setManualTransform(prev => ({ ...prev, tx: v }))} />
+                                            <Slider label="TY (m)" value={manualTransform.ty} min={-0.2} max={0.2} step={0.001} onChange={(v) => setManualTransform(prev => ({ ...prev, ty: v }))} />
+                                            <Slider label="TZ (m)" value={manualTransform.tz} min={-0.2} max={0.2} step={0.001} onChange={(v) => setManualTransform(prev => ({ ...prev, tz: v }))} />
+                                        </div>
+                                        <div className="space-y-3">
+                                            <Slider label="RX (°)" value={manualTransform.rx} min={-30} max={30} step={0.1} onChange={(v) => setManualTransform(prev => ({ ...prev, rx: v }))} />
+                                            <Slider label="RY (°)" value={manualTransform.ry} min={-30} max={30} step={0.1} onChange={(v) => setManualTransform(prev => ({ ...prev, ry: v }))} />
+                                            <Slider label="RZ (°)" value={manualTransform.rz} min={-30} max={30} step={0.1} onChange={(v) => setManualTransform(prev => ({ ...prev, rz: v }))} />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
