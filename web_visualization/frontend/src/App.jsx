@@ -5,7 +5,16 @@ import clsx from 'clsx';
 
 function App() {
   const [datasetType, setDatasetType] = useState('extreme');
-  const { data, detailedData, loading, detailedLoading, error, fetchDetailed } = useData(datasetType);
+  const {
+    data,
+    detailedData,
+    loading,
+    detailedLoading,
+    error,
+    fetchDetailed,
+    fetchScanPoints,
+    fetchGTRow
+  } = useData(datasetType);
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-pink-500 selection:text-white">
@@ -60,6 +69,8 @@ function App() {
             detailedData={detailedData}
             fetchDetailed={fetchDetailed}
             detailedLoading={detailedLoading}
+            fetchScanPoints={fetchScanPoints}
+            fetchGTRow={fetchGTRow}
           />
         )}
       </main>

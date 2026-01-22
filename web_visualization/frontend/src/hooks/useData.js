@@ -34,6 +34,26 @@ const useData = (datasetType) => {
         }
     }, [datasetType]);
 
+    const fetchScanPoints = useCallback(async (sensor, setup, filename) => {
+        try {
+            const response = await axios.get(`http://localhost:8000/scan-points/${datasetType}/${sensor}/${setup}/${filename}`);
+            return response.data.points;
+        } catch (err) {
+            console.error("Error fetching scan points:", err);
+            return [];
+        }
+    }, [datasetType]);
+
+    const fetchGTRow = useCallback(async (sensor, setup, sampleId) => {
+        try {
+            const response = await axios.get(`http://localhost:8000/ground-truth-detail/${datasetType}/${sensor}/${setup}/${sampleId}`);
+            return response.data.data;
+        } catch (err) {
+            console.error("Error fetching GT detail:", err);
+            return null;
+        }
+    }, [datasetType]);
+
     useEffect(() => {
         if (datasetType) {
             fetchData();
@@ -41,7 +61,16 @@ const useData = (datasetType) => {
         }
     }, [datasetType, fetchData, fetchDetailed]);
 
-    return { data, detailedData, loading, detailedLoading, error, fetchDetailed };
+    return {
+        data,
+        detailedData,
+        loading,
+        detailedLoading,
+        error,
+        fetchDetailed,
+        fetchScanPoints,
+        fetchGTRow
+    };
 };
 
 export default useData;

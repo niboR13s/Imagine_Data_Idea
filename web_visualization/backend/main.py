@@ -123,6 +123,91 @@ async def get_detailed_data(dataset_type: str, sensor: str = None):
         print(f"Error in data-detailed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/scan-points/{dataset_type}/{sensor}/{setup}/{filename}")
+async def get_scan_points(dataset_type: str, sensor: str, setup: str, filename: str):
+    if dataset_type not in FILES:
+        raise HTTPException(status_code=404, detail="Dataset not found.")
+    
+    # Construct path: Blender_Generated_Data/Model/{Hard test}/{cam_d435}/{setup_front}/{scan_0000.csv}
+    # dataset_type is 'hard' or 'extreme', but dir names are 'Hard test' and 'Extreme test'
+    dir_map = {"hard": "Hard test", "extreme": "Extreme test"}
+    dir_name = dir_map.get(dataset_type, dataset_type)
+    
+    file_path = os.path.join(DATA_DIR, dir_name, sensor, setup, filename)
+    
+    if not os.path.exists(file_path):
+         # Try fallback
+         file_path_fallback = file_path.replace("../../", "../../../")
+         if os.path.exists(file_path_fallback):
+             file_path = file_path_fallback
+         else:
+             raise HTTPException(status_code=404, detail=f"Scan file not found: {file_path}")
+             
+    try:
+        df = pd.read_csv(file_path)
+        # Assuming CSV has X,Y,Z columns
+        points = df[['X', 'Y', 'Z']].values.tolist()
+        return {"points": points}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/ground-truth-detail/{dataset_type}/{sensor}/{setup}/{sample_id}")
+async def get_gt_detail(dataset_type: str, sensor: str, setup: str, sample_id: int):
+    if dataset_type not in FILES:
+        raise HTTPException(status_code=404, detail="Dataset not found.")
+        
+    dir_map = {"hard": "Hard test", "extreme": "Extreme test"}
+    dir_name = dir_map.get(dataset_type, dataset_type)
+    gt_path = os.path.join(DATA_DIR, dir_name, sensor, setup, "ground_truth.csv")
+    
+    if not os.path.exists(gt_path):
+        gt_path = gt_path.replace("../../", "../../../")
+        
+    if not os.path.exists(gt_path):
+        raise HTTPException(status_code=404, detail="Ground truth file not found.")
+        
+    try:
+        # 1. Get raw transformation from CSV
+        df_csv = pd.read_csv(gt_path, comment='#')
+        row_csv = df_csv[df_csv['sample_id'] == sample_id]
+        if row_csv.empty:
+            raise HTTPException(status_code=404, detail="Sample ID not found in ground truth CSV.")
+            
+        result = row_csv.to_dict(orient="records")[0]
+
+        # 2. Get performance metrics from Excel
+        excel_path = FILES[dataset_type]
+        if excel_path in CACHE and "raw_data" in CACHE[excel_path]:
+            df_excel = CACHE[excel_path]["raw_data"]
+        else:
+            df_excel = pd.read_excel(excel_path, sheet_name="Raw_Data")
+            if excel_path not in CACHE:
+                CACHE[excel_path] = {}
+            CACHE[excel_path]["raw_data"] = df_excel
+
+        # Column names in Excel: Sensor, Position, Sample_ID, Fitness, RMSE
+        # Position in main.py is "setup" in the directory structure
+        excel_row = df_excel[
+            (df_excel['Sensor'] == sensor) & 
+            (df_excel['Position'] == setup) & 
+            (df_excel['Sample_ID'] == sample_id)
+        ]
+        
+        if not excel_row.empty:
+            metrics = excel_row.iloc[0].to_dict()
+            result.update({
+                "Fitness": metrics.get("Fitness", 0),
+                "RMSE": metrics.get("RMSE", 0),
+                "Error_Rot_Deg": metrics.get("Error_Rot_Deg", 0),
+                "Error_Trans_M": metrics.get("Error_Trans_M", 0),
+                "Time_Total": metrics.get("Time_Total", 0)
+            })
+
+        return {"data": result}
+    except Exception as e:
+        print(f"Error in gt-detail: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the Data Visualization API"}
