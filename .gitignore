@@ -2,5 +2,15 @@
 # *.csv
 *.blend
 *.blend1
+
+# Web Visualization
+web_visualization/frontend/node_modules/
+web_visualization/frontend/dist/
+web_visualization/backend/venv/
+web_visualization/backend/__pycache__/
+.env
+.idea/
+
+# Mac OS
 .DS_Store
 **/.DS_Store
